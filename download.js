@@ -12,10 +12,11 @@ ig.scrapeTag(tag).then(function(result) {
   result.medias.forEach(function(post) {
     const hashtags = post.text.match(/(\#[a-zA-Z0-9\-\_]+)/g);
     if (hashtags) {
-      const displayUrl = post.display_url;
-      console.log(`Downloading ${displayUrl}...`);
+      // const downloadUrl = post.display_url;  // original files are too large. use the thumbnails.
+      const downloadUrl = post.thumbnail_resource[0].src;
+      console.log(`Downloading ${downloadUrl}...`);
 
-      const parsed = url.parse(displayUrl);
+      const parsed = url.parse(downloadUrl);
       const sourceFilename = path.basename(parsed.pathname);
 
       const txtFilename = sourceFilename.replace(/\.jpg$/, ".txt");
@@ -26,10 +27,10 @@ ig.scrapeTag(tag).then(function(result) {
       });
 
       const bmpFilename = sourceFilename.replace(/\.jpg$/, ".bmp");
-      jimp.read(displayUrl, function(err, jaypeg) {
+      jimp.read(downloadUrl, function(err, jaypeg) {
         if (err) throw err;
         console.log("Converting file", bmpFilename);
-        jaypeg.write(bmpFilename);
+        jaypeg.resize(50, 50).write(bmpFilename);
       });
     }
   });
