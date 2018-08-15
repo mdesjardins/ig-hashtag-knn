@@ -6,7 +6,7 @@ const dirContents = fs.readdirSync(".");
 const bitmaps = dirContents.filter(file => file.match(/\.bmp$/));
 let trainingData = new Array();
 
-bitmaps.slice(0, 25).forEach(bitmap => {
+bitmaps.slice(0, 5).forEach(bitmap => {
   console.log(`Reading ${bitmap}`);
   const bmpBuffer = fs.readFileSync(bitmap);
   const bmpData = bmp.decode(bmpBuffer);
@@ -16,7 +16,12 @@ bitmaps.slice(0, 25).forEach(bitmap => {
   // of unsinged ints
   const pixels = new Array();
   for (let offset = 0, len = bmpData.data.length; offset < len; offset += 4) {
-    pixels.push(bmpData.data.readUInt32BE(offset));
+    pixels.push([
+      bmpData.data.readUInt32BE(offset),
+      bmpData.data.readUInt32BE(offset + 1),
+      bmpData.data.readUInt32BE(offset + 2),
+      bmpData.data.readUInt32BE(offset + 3)
+    ]);
   }
 
   const txtFilename = bitmap.replace(/\.bmp$/, ".txt");
@@ -29,5 +34,10 @@ bitmaps.slice(0, 25).forEach(bitmap => {
 });
 
 // console.log("About to train...", trainingData);
-var net = new brain.recurrent.RNN();
-net.train(trainingData, { log: true });
+var net = new brain.recurrent.LSTM();
+net.train(trainingData, {
+  iterations: 25,
+  errorThresh: 0.1,
+  log: true,
+  logPeriod: 1
+});

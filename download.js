@@ -8,6 +8,8 @@ var jimp = require("jimp");
 const tag = process.argv[2] || "igers";
 console.log(`Downloading tag ${tag}`);
 
+fs.mkdirSync(tag);
+
 ig.scrapeTag(tag).then(function(result) {
   result.medias.forEach(function(post) {
     const hashtags = post.text.match(/(\#[a-zA-Z0-9\-\_]+)/g);
@@ -19,14 +21,10 @@ ig.scrapeTag(tag).then(function(result) {
       const parsed = url.parse(downloadUrl);
       const sourceFilename = path.basename(parsed.pathname);
 
-      const txtFilename = sourceFilename.replace(/\.jpg$/, ".txt");
-      fs.writeFile(txtFilename, hashtags.join(",").replace(/\#/g, ""), function(
-        err
-      ) {
-        if (err) throw err;
-      });
-
-      const bmpFilename = sourceFilename.replace(/\.jpg$/, ".bmp");
+      const bmpFilename = `./${tag}/${sourceFilename.replace(
+        /\.jpg$/,
+        ".bmp"
+      )}`;
       jimp.read(downloadUrl, function(err, jaypeg) {
         if (err) throw err;
         console.log("Converting file", bmpFilename);
