@@ -8,7 +8,9 @@ var jimp = require("jimp");
 const tag = process.argv[2] || "igers";
 console.log(`Downloading tag ${tag}`);
 
-fs.mkdirSync(tag);
+if (!fs.existsSync(tag)) {
+  fs.mkdirSync(tag);
+}
 
 ig.scrapeTag(tag).then(function(result) {
   result.medias.forEach(function(post) {
