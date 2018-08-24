@@ -30,7 +30,10 @@ ig.scrapeTag(tag).then(function(result) {
       jimp.read(downloadUrl, function(err, jaypeg) {
         if (err) throw err;
         console.log("Converting file", bmpFilename);
-        jaypeg.resize(50, 50).write(bmpFilename);
+        jaypeg
+          .resize(50, 50)
+          .grayscale()
+          .write(bmpFilename);
       });
     }
   });

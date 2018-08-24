@@ -1,0 +1,10 @@
+* Need a module/fn that accepts a hashtag and downloads a boatload of images,
+  resizes them, converts them to bitmaps, and grayscales them.
+* Need another module function that converts everything into its RGB vector.
+* Main thing that does scoring.
+* Wrapper so we can use every file in our corpus and test it and see how
+  accurate we've become.
+
+Nice to have:
+
+* Be able to view tested and winners/losers to see what is tricking it.
