@@ -9,13 +9,13 @@ const path = require("path");
 const jimp = require("jimp");
 const bmp = require("bmp-js");
 
-export function downloadAndConvert(datadir, tag, size) {
+exports.downloadAndConvert = async function(tag, datadir, size) {
   if (!fs.existsSync(datadir)) {
     fs.mkdirSync(datadir);
   }
 
-  if (!fs.existsSync(`datadir/${tag}`)) {
-    fs.mkdirSync(`datadir/${tag}`);
+  if (!fs.existsSync(`${datadir}/${tag}`)) {
+    fs.mkdirSync(`${datadir}/${tag}`);
   }
 
   ig.scrapeTag(tag).then(result => {
@@ -30,7 +30,7 @@ export function downloadAndConvert(datadir, tag, size) {
         const parsed = url.parse(downloadUrl);
         const sourceFilename = path.basename(parsed.pathname);
 
-        const bmpFilename = `./${tag}/${sourceFilename.replace(
+        const bmpFilename = `${datadir}/${tag}/${sourceFilename.replace(
           /\.jpg$/,
           ".bmp"
         )}`;
@@ -45,9 +45,9 @@ export function downloadAndConvert(datadir, tag, size) {
       }
     });
   });
-}
+};
 
-export function convertToBitmapVector(bmpBuffer) {
+exports.convertToBitmapVector = bmpBuffer => {
   const bmpData = bmp.decode(bmpBuffer);
   const red = new Array();
   const green = new Array();
@@ -66,22 +66,22 @@ export function convertToBitmapVector(bmpBuffer) {
     blue.push(bmpData.data.readUInt8(offset + 3)); // blue
   }
   return red.concat(green).concat(blue);
-}
+};
 
-export function convertDirectoryToBitmapVectors(datadir, tag) {
-  const dirContents = fs.readdirSync(`./${tag}`);
+exports.convertDirectoryToBitmapVectors = (tag, datadir) => {
+  const dirContents = fs.readdirSync(`${datadir}/${tag}`);
   const bitmaps = dirContents.filter(file => file.match(/\.bmp$/));
 
   const images = new Array(); // Array of image vectors
 
-  const jsonOutput = fs.openSync(`${tag}.json`, "w");
+  const jsonOutput = fs.openSync(`${datadir}/${tag}.json`, "w");
 
   bitmaps.forEach(bitmap => {
-    const bmpBuffer = fs.readFileSync(`./${tag}/${bitmap}`);
-    images.push(convertToBitmapVector(bmpBuffer));
+    const bmpBuffer = fs.readFileSync(`${datadir}/${tag}/${bitmap}`);
+    images.push(exports.convertToBitmapVector(bmpBuffer));
   });
 
   fs.writeSync(jsonOutput, JSON.stringify(images));
   return images;
   console.log(images.length);
-}
+};

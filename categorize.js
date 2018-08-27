@@ -1,9 +1,10 @@
+const utils = require("./utils.js");
 const fs = require("fs");
 const distance = require("euclidean-distance");
 const bmp = require("bmp-js");
 const { exec } = require("child_process");
 
-const K = 10;
+const K = 5;
 
 const categories = [
   {
@@ -13,28 +14,22 @@ const categories = [
     tag: process.argv[3] || "dogsofinstagram"
   }
 ];
+const datadir = process.argv[5] || "data";
+
 let scores = [];
 
+// read the file we're testing.
 const fileToCheck = process.argv[4] || "oops";
 const bmpBuffer = fs.readFileSync(fileToCheck);
-const bmpData = bmp.decode(bmpBuffer);
-const pixels = new Array(); // Vector representing one image
 
-for (
-  let offset = 0, index = 0, len = bmpData.data.length;
-  offset < len;
-  offset += 4, index++
-) {
-  // We can ignore the lowest byte of each word because that's
-  // where it stores the alpha channel, which is always zero
-  // on our bitmaps.
-  pixels.push(bmpData.data.readUInt8(offset + 1)); // red
-  pixels.push(bmpData.data.readUInt8(offset + 2)); // green
-  pixels.push(bmpData.data.readUInt8(offset + 3)); // blue
-}
+// get its bitmap vector.
+const pixels = utils.convertToBitmapVector(bmpBuffer);
 
+// main scoring loop. go through each image in each category
+// and calculate the distance between the vector of the tested
+// image and the iteree.
 categories.forEach((category, index) => {
-  const raw = fs.readFileSync(`${category.tag}.json`);
+  const raw = fs.readFileSync(`${datadir}/${category.tag}.json`);
   category.vectors = JSON.parse(raw);
   category.vectors.forEach(vector => {
     scores.push([category.tag, distance(pixels, vector)]);
@@ -44,7 +39,7 @@ categories.forEach((category, index) => {
 // Sort the scores
 scores.sort((a, b) => (a[1] == b[1] ? 0 : +(a[1] > b[1]) || -1));
 
-// Top 5
+// Top K scores.
 const closest = scores.slice(0, K);
 
 console.log("TOP (Nearest)", closest);
